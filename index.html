@@ -119,7 +119,7 @@ function knapsackSolver (items, capacity) {
     // this was the easiest way to fix this - we add an extra item and just don't make a row with it xd
   items.push({weight: 1000, value: 0})
   const weightAvailable = capacity;
-  const delayTime = 1000; 
+  const delayTime = 10; 
 
 
 
@@ -179,19 +179,21 @@ function knapsackSolver (items, capacity) {
     let takeItems = [];
     let takeWeight = 0;
     let remainingCapacity = capacity;
+    let newRemainingCapacity;
     if (item.weight <= capacity) {
-      remainingCapacity = capacity - item.weight;
-      takeValue = item.value + decisionsSoFar[remainingCapacity].value;
-      takeItems = [...decisionsSoFar[remainingCapacity].items, item];
-      takeWeight = item.weight + decisionsSoFar[remainingCapacity].weight;
+      //minus the weight of all other items in that square, UGH
+      newRemainingCapacity = capacity - item.weight;
+      takeValue = item.value + decisionsSoFar[newRemainingCapacity].value;
+      takeItems = [...decisionsSoFar[newRemainingCapacity].items, item];
+      takeWeight = item.weight + decisionsSoFar[newRemainingCapacity].weight;
     }
     if (takeValue > notTakeValue) {
         //console.log('taken!')
-      return { value: takeValue, items: takeItems, weight: takeWeight, remainingCapacity };
+      return { value: takeValue, items: takeItems, weight: takeWeight, remainingCapacity: capacity-takeWeight};
       
     } else {
        // console.log('not taken!')
-      return { value: notTakeValue, items: decisionsSoFar[capacity].items, weight: decisionsSoFar[capacity].weight || 0, remainingCapacity: capacity };
+      return { value: notTakeValue, items: decisionsSoFar[capacity].items, weight: decisionsSoFar[capacity].weight || 0, remainingCapacity: decisionsSoFar[capacity].remainingCapacity };
       
     }
   }
