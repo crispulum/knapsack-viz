@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knapsack Visualization</title>
+<style>
+  table {
+    border-collapse: collapse;
+  }
+  td, th {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+    width: 200px;
+    height: 100px;
+  }
+  .highlight {
+    background-color: yellow;
+  }
+  .item-highlight {
+    background-color: lightgreen;
+  }
+  .no-take {
+    background-color: red;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+
+<h1>Knapsack Problem Visualization</h1>
+
+<form id="knapsack-form">
+    <label for="capacity">Knapsack Capacity:</label>
+    <input type="number" id="capacity" name="capacity" required>
+    <br>
+    <div id="items-input">
+      <div class="item-row">
+        <label for="weight-1">Weight:</label>
+        <input type="number" name="weight" class="item-weight" required>
+        <label for="value-1">Value:</label>
+        <input type="number" name="value" class="item-value" required>
+      </div>
+    </div>
+    <button type="button" id="add-item-btn">Add Item</button>
+    <br>
+    <button type="submit">Submit</button>
+  </form>
+  
+<button type = "submit" id = "pause-btn"> Pause </button>
+
+<div>
+  <ul id="items-list" style= "display: none;" ></ul>
+</div>
+<div>
+  <h2>Knapsack Table</h2>
+  <table id="knapsack-table"></table>
+</div>
+<div id="no-take-cell" class="no-take" style="display:none;">
+  No Take :(
+</div>
+
+<script>
+
+const addItemRow = () => {
+  const itemsInputDiv = document.getElementById('items-input');
+  const newItemRow = document.createElement('div');
+  newItemRow.classList.add('item-row');
+  newItemRow.innerHTML = `
+    <label for="weight">Weight:</label>
+    <input type="number" name="weight" class="item-weight" required>
+    <label for="value">Value:</label>
+    <input type="number" name="value" class="item-value" required>
+  `;
+  itemsInputDiv.appendChild(newItemRow);
+}
+let paused = false;
+document.getElementById('add-item-btn').addEventListener('click', addItemRow);
+const clearKnapsackTable = () => {
+  const tableElement = document.getElementById('knapsack-table');
+  // Remove all rows except the header row
+  tableElement.innerHTML = ''; 
+}
+
+const handlePauseSubmit = (event) => {
+    event.preventDefault();
+    paused = !paused;
+    console.log('p/up')
+    console.log(paused)
+}
+document.getElementById('pause-btn').addEventListener('click', handlePauseSubmit);
+const handleFormSubmit = (event) => {
+  event.preventDefault();
+  
+  clearKnapsackTable();
+  const capacity = parseInt(document.getElementById('capacity').value);
+  const itemRows = document.querySelectorAll('.item-row');
+  let items = [];
+
+  itemRows.forEach((itemRow, index) => {
+    const weight = parseInt(itemRow.querySelector('.item-weight').value);
+    const value = parseInt(itemRow.querySelector('.item-value').value);
+    items.push({ weight, value });
+  });
+
+
+  const result = knapsackSolver(items, capacity);
+  itemRows.innerHTML = ''
+  items = []
+
+}
+document.getElementById('knapsack-form').addEventListener('submit', handleFormSubmit);
+function knapsackSolver (items, capacity) {
+    // okay so this is INCREDIBLY cursed but bear with me - I kept running into these weird off-by-one errors that have to do with the very weird way this approach uses tables/
+    // this was the easiest way to fix this - we add an extra item and just don't make a row with it xd
+  items.push({weight: 1000, value: 0})
+  const weightAvailable = capacity;
+  const delayTime = 1000; 
+
+
+
+
+  const table = [];
+  const tableElement = document.getElementById('knapsack-table');
+  
+  // header row
+  const headerRow = document.createElement('tr');
+  const eligibleItemHeader = document.createElement('th');
+  eligibleItemHeader.textContent = 'Eligible Item';
+  headerRow.appendChild(eligibleItemHeader);
+  console.log(items)
+  for (let ccapacity = 0; ccapacity <= weightAvailable; ccapacity += 1) {
+    const th = document.createElement('th');
+    th.textContent = `Cap ${ccapacity}`;
+    headerRow.appendChild(th);
+  }
+  tableElement.appendChild(headerRow);
+
+
+  //item column
+  for (let itemIndex = 0; itemIndex <= items.length; itemIndex += 1) {
+    const row = [];
+    const tr = document.createElement('tr');
+    table.push(row);
+
+    const eligibleItemTd = document.createElement('td');
+    if (itemIndex > 0) {
+      eligibleItemTd.textContent = `Item ${itemIndex} (Weight: ${items[itemIndex - 1].weight}, Value: ${items[itemIndex - 1].value})`;
+      eligibleItemTd.setAttribute('id', `eligible-item-${itemIndex - 1}`);
+    }
+
+    //we exclude the last fake item because I didn't want to fix the off-by-one error
+    if (itemIndex != items.length) {
+        tr.appendChild(eligibleItemTd);
+
+    for (let capacity = 0; capacity <= weightAvailable; capacity += 1) {
+      const td = document.createElement('td');
+      if (itemIndex === 0) {
+        row.push({ value: 0, items: [], weight: 0, remainingCapacity: capacity });
+        td.innerHTML = `Value: 0<br>Weight: 0<br>Items: []<br>Rem. Cap.: ${capacity}`;
+      } else {
+        row.push({ value: null, items: [], weight: null, remainingCapacity: null });
+      }
+      tr.appendChild(td);
+    }
+    tableElement.appendChild(tr);
+}
+  }
+
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  const decideToTakeOrNot = (decisionsSoFar, item, capacity) => {
+    let takeValue = 0;
+    let notTakeValue = decisionsSoFar[capacity].value || 0;
+    let takeItems = [];
+    let takeWeight = 0;
+    let remainingCapacity = capacity;
+    if (item.weight <= capacity) {
+      remainingCapacity = capacity - item.weight;
+      takeValue = item.value + decisionsSoFar[remainingCapacity].value;
+      takeItems = [...decisionsSoFar[remainingCapacity].items, item];
+      takeWeight = item.weight + decisionsSoFar[remainingCapacity].weight;
+    }
+    if (takeValue > notTakeValue) {
+        //console.log('taken!')
+      return { value: takeValue, items: takeItems, weight: takeWeight, remainingCapacity };
+      
+    } else {
+       // console.log('not taken!')
+      return { value: notTakeValue, items: decisionsSoFar[capacity].items, weight: decisionsSoFar[capacity].weight || 0, remainingCapacity: capacity };
+      
+    }
+  }
+  const updateTable = async () => {
+    // so we start at index 2 because there's the header and then first row, which are always static and we don't mess with them
+  for (let itemIndex = 2; itemIndex < items.length+1; itemIndex += 1) { 
+    for (let capacity = 0; capacity <= weightAvailable; capacity += 1) {
+      // 
+      const currentItem = items[itemIndex - 2]; 
+      const td = tableElement.rows[itemIndex].cells[capacity + 1]; // because the leftmost column is the items
+      const itemElement = document.getElementById(`eligible-item-${itemIndex - 2}`); //because the item elemenents ARE correctly indexed
+      const noTakeCell = document.getElementById('no-take-cell');
+
+      // highlights for visual clarity
+      td.classList.add('highlight');
+      itemElement.classList.add('item-highlight');
+      while (paused) {
+        await delay(2000)
+      }
+      //highlight no take cell
+      const notTakeRowIndex = itemIndex - 1; //header
+      const notTakeTd = tableElement.rows[notTakeRowIndex].cells[capacity + 1]; //item column
+      notTakeTd.classList.add('highlight');
+      await delay(delayTime);
+
+     //highlight the take cell if it exists
+      if (currentItem.weight <= capacity) {
+        const remainingCapacity = capacity - currentItem.weight;
+        const takeRowIndex = itemIndex - 1;
+        const takeColumnIndex = remainingCapacity + 1; // item column
+        if (takeColumnIndex >= 1 && takeRowIndex >= 0) {
+          const takeTd = tableElement.rows[takeRowIndex].cells[takeColumnIndex];
+          takeTd.classList.add('highlight');
+          await delay(delayTime);
+          takeTd.classList.remove('highlight');
+        }
+      } else {
+        noTakeCell.style.display = 'block';
+        await delay(delayTime);
+        noTakeCell.style.display = 'none';
+      }
+      while (paused) {
+        await delay(2000)
+      }
+      const newValue = decideToTakeOrNot(table[itemIndex - 1], currentItem, capacity);
+      console.log(itemIndex + " itemIndex " + capacity + " is capacity")
+      table[itemIndex][capacity] = newValue;
+      while(paused) {
+        await delay(2000)
+      } 
+      // update current~
+      td.innerHTML = `Value: ${newValue.value}<br>Weight: ${newValue.weight}<br>Items: [${newValue.items.map((item, index) => `Item ${items.indexOf(item) + 1}`).join(', ')}]<br>Rem. Cap.: ${newValue.remainingCapacity}`;
+
+      td.classList.remove('highlight');
+      itemElement.classList.remove('item-highlight');
+      notTakeTd.classList.remove('highlight');
+      while(paused) {
+        await delay(2000)
+      }
+      await delay(delayTime);
+    }
+    
+  }
+
+}
+updateTable()
+}
+
+
+
+</script>
+
+</body>
+</html>
