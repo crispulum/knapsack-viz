@@ -193,7 +193,7 @@ function knapsackSolver (items, capacity) {
       
     } else {
        // console.log('not taken!')
-      return { value: notTakeValue, items: decisionsSoFar[capacity].items, weight: decisionsSoFar[capacity].weight || 0, remainingCapacity: decisionsSoFar[capacity].remainingCapacity };
+      return { value: notTakeValue, items: decisionsSoFar[capacity].items, weight: decisionsSoFar[capacity].weight || 0, remainingCapacity: decisionsSoFar[capacity].remainingCapacity || 0};
       
     }
   }
