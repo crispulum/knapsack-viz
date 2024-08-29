@@ -37,7 +37,7 @@ label {
 input[type="number"] {
   width: 100px;
   padding: 8px;
-  margin-bottom: 10px;
+
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -57,8 +57,8 @@ button:hover {
 }
 
 #pause-btn {
-  background-color: #e74c3c;
-  margin-bottom: 20px;
+  margin-top: 5px;
+  background-color: #e4695b;
 }
 
 #pause-btn:hover {
@@ -110,15 +110,124 @@ th {
   margin-top: 20px;
   font-weight: bold;
 }
+.gold {
+  background-color: gold;
+  font-weight: bold;
+}
+.question-mark {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 10px;
+    position: relative;
+    text-decoration: none;
+    user-select: none;
+  }
 
+  .tooltip {
+    visibility: hidden;
+    width: 900px;
+    background-color: rgba(51, 51, 51, 0.95);
+    color: #fff;
+    text-align: left;
+    font-size: 16px;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    top: 125%;
+    left: 50px;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .question-mark:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+  .tooltip-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .tooltip-section {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 6px;
+  }
+
+  .tooltip h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #3498db;
+    font-size: 1.2em;
+  }
+
+  .tooltip p {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .tooltip {
+      width: calc(100vw - 40px);
+      max-width: 800px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .tooltip-content {
+      grid-template-columns: 1fr;
+    }
+  }
 
 </style>
 </head>
 <body>
-
   <div class="container">
     <header>
-        <h1>Knapsack Problem Visualization</h1>
+        <h1>Knapsack Problem Visualization
+          <span class="question-mark">?
+            <span class="tooltip">
+              <div class="tooltip-content">
+                <div class="tooltip-section">
+                  <h3>The Knapsack Problem</h3>
+                  <p>The Knapsack Problem is a classic optimization problem in computer science. Given a set of items, each with a weight and a value, determine the number of each item to include in a collection so that the total weight is less than or equal to a given limit and the total value is as large as possible.</p>
+                </div>
+                <div class="tooltip-section">
+                  <h3>Dynamic Programming Solution</h3>
+                  <p>We use a table to store optimal solutions for subproblems. Each cell represents the maximum value achievable for a given capacity and set of items. We iteratively fill the table, considering whether to include each item or not based on previous optimal solutions. This approach ensures we find the global optimum by building on optimal subproblem solutions.</p>
+                </div>
+                <div class="tooltip-section">
+                  <h3>How to Use This Visualization</h3>
+                  <p>1. Set the knapsack capacity (maximum weight).<br>
+                     2. Add items by specifying their weights and values.<br>
+                     3. Click "Start Visualization" to see the algorithm in action.<br>
+                     4. Use the "Pause" button to control the visualization speed.<br>
+                     5. Observe how the table is filled and the optimal solution is found.</p>
+                </div>
+                <div class="tooltip-section">
+                  <h3>Understanding the Table</h3>
+                  <p>- Each row represents an item being considered.<br>
+                     - Each column represents a capacity from 0 to the maximum.<br>
+                     - Cells show the best value achievable for that capacity and set of items.<br>
+                     - The final cell (bottom-right) shows the optimal solution.<br>
+                     - Highlighted cells show the current step in the algorithm.</p>
+                </div>
+              </div>
+            </span>
+          </span>
+        </h1>
     </header>
 
     <main>
@@ -127,10 +236,16 @@ th {
                 <div class="form-group">
                     <label for="capacity">Knapsack Capacity:</label>
                     <input type="number" id="capacity" name="capacity" required>
+                    
                 </div>
 
+                <h3>Items
+                <span class="button-group">
+                    <button type="button" id="add-item-btn">Add Item</button>
+                </span>
+              </h3>
+
                 <div id="items-input">
-                    <h3>Items</h3>
                     <div class="item-row">
                         <span class="form-group">
                             <label for="weight-1">Weight:</label>
@@ -143,30 +258,26 @@ th {
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button type="button" id="add-item-btn">Add Item</button>
-                    <button type="submit">Start Visualization</button>
-                </div>
+                <section id="visualization-section">
+                  <div class="control-panel">
+                    <div style="margin-top:5px" class="button-group">
+                      <button type="submit">Start Visualization</button>
+                      <button id="pause-btn">Pause</button>
+                  </div>
+            </section>
             </form>
-        </section>
-
-        <section id="visualization-section">
-            <div class="control-panel">
-                <button id="pause-btn">Pause</button>
-            </div>
+            
+        
 
 
-            <div id="table-container">
-                <h2>Knapsack Table</h2>
-                <div class="table-wrapper">
-                    <table id="knapsack-table"></table>
-                </div>
-            </div>
+          <div id="table-container">
+              <h2>Knapsack Table</h2>
+              <div class="table-wrapper">
+                  <table id="knapsack-table"></table>
+              </div>
+          </div>
 
-            <div id="no-take-cell" class="no-take" style="display:none;">
-                No Take :(
-            </div>
-        </section>
+
     </main>
 </div>
 
@@ -219,7 +330,7 @@ const handleFormSubmit = (event) => {
   items = []
 
 }
-document.getElementById('knapsack-form').addEventListener('submit', handleFormSubmit);
+document.querySelector('#knapsack-form button[type="submit"]').addEventListener('click', handleFormSubmit);;
 function knapsackSolver (items, capacity) {
     // okay so this is INCREDIBLY cursed but bear with me - I kept running into these weird off-by-one errors that have to do with the very weird way this approach uses tables/
     // this was the easiest way to fix this - we add an extra item and just don't make a row with it xd
@@ -307,16 +418,18 @@ function knapsackSolver (items, capacity) {
   const updateTable = async () => {
     // so we start at index 2 because there's the header and then first row, which are always static and we don't mess with them
   for (let itemIndex = 2; itemIndex < items.length+1; itemIndex += 1) { 
+    const itemElement = document.getElementById(`eligible-item-${itemIndex - 2}`)
+    itemElement.classList.add('item-highlight');
     for (let capacity = 0; capacity <= weightAvailable; capacity += 1) {
       // 
       const currentItem = items[itemIndex - 2]; 
       const td = tableElement.rows[itemIndex].cells[capacity + 1]; // because the leftmost column is the items
-      const itemElement = document.getElementById(`eligible-item-${itemIndex - 2}`); //because the item elemenents ARE correctly indexed
+      //const itemElement = document.getElementById(`eligible-item-${itemIndex - 2}`); //because the item elemenents ARE correctly indexed
       const noTakeCell = document.getElementById('no-take-cell');
 
       // highlights for visual clarity
       td.classList.add('highlight');
-      itemElement.classList.add('item-highlight');
+      //itemElement.classList.add('item-highlight');
       while (paused) {
         await delay(2000)
       }
@@ -337,11 +450,7 @@ function knapsackSolver (items, capacity) {
           await delay(delayTime);
           takeTd.classList.remove('highlight');
         }
-      } else {
-        noTakeCell.style.display = 'block';
-        await delay(delayTime);
-        noTakeCell.style.display = 'none';
-      }
+      } 
       while (paused) {
         await delay(2000)
       }
@@ -355,14 +464,15 @@ function knapsackSolver (items, capacity) {
       td.innerHTML = `Value: ${newValue.value}<br>Weight: ${newValue.weight}<br>Items: ${newValue.items.map((item, index) => `${items.indexOf(item) + 1}`).join(', ')}<br>Rem. Cap.: ${newValue.remainingCapacity}`;
 
       td.classList.remove('highlight');
-      itemElement.classList.remove('item-highlight');
+      
       notTakeTd.classList.remove('highlight');
       while(paused) {
         await delay(2000)
       }
       await delay(delayTime);
+      if (capacity == weightAvailable) itemElement.classList.remove('item-highlight');
+      if (capacity == weightAvailable && itemIndex == items.length) td.classList.add('gold')
     }
-    
   }
 
 }
